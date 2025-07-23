@@ -97,12 +97,13 @@ OpenMemo is a 100% open-source AI memory integration tool that brings ChatGPT-st
 - [ ] Poe
 - [ ] Le Chat
 - [ ] YouChat
-- [ ] Meta AI - Maybe?
-- [ ] HuggingChat
 - [ ] Pi
 - [ ] C.ai
 - [ ] Bing
 - [ ] Replika
+- [ ] Meta AI - Maybe?
+- [ ] HuggingChat - When they finish cooking
+
 
 ### Core Features
 
