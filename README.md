@@ -80,18 +80,29 @@ OpenMemo is a 100% open-source AI memory integration tool that brings ChatGPT-st
 
 ### Platform Support
 
+> **Note:** Platforms are sorted by current priority. If you'd like to suggest support for a new platform, please [open an issue](https://github.com/MrlolDev/openmemo/issues) on GitHub!
+
 - [x] ChatGPT
-- [x] Claude AI
-- [x] Perplexity
-- [x] Google Gemini
+- [x] Claude
+- [x] T3 Chat
 - [x] DeepSeek
-- [x] T3.chat
 - [x] Grok
-- [x] Delphi AI
-- [ ] OpenAI Playground
+- [ ] Perplexity - WIP
+- [ ] Gemini - WIP
+- [ ] Delphi - WIP
+- [ ] Groq
+- [ ] Qwen
+- [ ] Kimi
+- [ ] Copilot
 - [ ] Poe
-- [ ] Character.AI
-- [ ] Hugging Face Chat
+- [ ] Le Chat
+- [ ] YouChat
+- [ ] Meta AI - Mayeb?
+- [ ] HuggingChat
+- [ ] Pi
+- [ ] C.ai
+- [ ] Bing
+- [ ] Replika
 
 ### Core Features
 
