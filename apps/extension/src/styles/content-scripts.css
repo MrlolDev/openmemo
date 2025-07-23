@@ -1,0 +1,57 @@
+/* Content Scripts Tailwind - Isolated from host pages */
+@import "tailwindcss";
+
+/* Isolate content script styles to prevent conflicts with host pages */
+.openmemo-widget,
+.openmemo-widget * {
+  /* Reset any inherited styles from the host page */
+  all: initial;
+
+  /* Re-apply font family for our components */
+  font-family:
+    "Poppins",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif !important;
+
+  /* Ensure our styles take precedence */
+  box-sizing: border-box !important;
+}
+
+/* Scope all our content script components under .openmemo-widget */
+.openmemo-widget {
+  /* Apply Tailwind base styles only to our widget */
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Essential styles for our widget positioning */
+.openmemo-widget {
+  position: fixed !important;
+  z-index: 2147483647 !important; /* Maximum z-index */
+  pointer-events: auto !important;
+}
+
+/* Ensure our buttons and inputs work properly */
+.openmemo-widget button,
+.openmemo-widget input,
+.openmemo-widget textarea,
+.openmemo-widget select {
+  font-family: inherit !important;
+  color: inherit !important;
+  background: inherit !important;
+  border: inherit !important;
+  outline: inherit !important;
+  cursor: pointer !important;
+}
+
+.openmemo-widget input,
+.openmemo-widget textarea {
+  cursor: text !important;
+}

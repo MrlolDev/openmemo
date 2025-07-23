@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  githubId  String?    @unique
+  avatarUrl String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  memories  Memory[]
+  queryLogs QueryLog[]
+
+  @@map("users")
+}
+
+model Memory {
+  id        String   @id @default(cuid())
+  content   String
+  category  String   @default("General")
+  source    String   @default("manual") // manual, chatgpt-export, claude-export
+  tags      String   @default("") // Comma-separated tags for better organization
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("memories")
+  @@index([userId])
+  @@index([category])
+  @@index([source])
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  userId    String
+  name      String?  // Optional name for the API key
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+
+  @@map("api_keys")
+  @@index([key])
+  @@index([userId])
+}
+
+model QueryLog {
+  id          String   @id @default(cuid())
+  userId      String
+  query       String
+  source      String   // 'chatgpt', 'claude', 'extension'
+  resultCount Int      @default(0)
+  responseTime Int?    // in milliseconds
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("query_logs")
+  @@index([userId])
+  @@index([source])
+  @@index([createdAt])
+}

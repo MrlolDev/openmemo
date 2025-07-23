@@ -1,0 +1,82 @@
+{
+  "manifest_version": 3,
+  "name": "OpenMemo",
+  "version": "1.0.0",
+  "description": "A way to use ChatGPT memory everywhere without bugs or strange settings",
+  "permissions": ["storage", "activeTab", "scripting", "tabs"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://t3.chat/*",
+    "http://localhost:3001/*",
+    "https://perplexity.ai/*",
+    "https://gemini.google.com/*",
+    "https://chat.deepseek.com/*",
+    "https://grok.com/*",
+    "https://delphi.ai/*"
+  ],
+  "background": {
+    "service_worker": "src/background.ts"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["src/content-scripts/chatgpt.ts"]
+    },
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["src/content-scripts/claude.ts"]
+    },
+    {
+      "matches": ["https://perplexity.ai/*"],
+      "js": ["src/content-scripts/perplexity.ts"]
+    },
+    {
+      "matches": ["https://gemini.google.com/*"],
+      "js": ["src/content-scripts/gemini.ts"]
+    },
+    {
+      "matches": ["https://chat.deepseek.com/*"],
+      "js": ["src/content-scripts/deepseek.ts"]
+    },
+    {
+      "matches": ["https://t3.chat/*"],
+      "js": ["src/content-scripts/t3chat.ts"]
+    },
+    {
+      "matches": ["https://grok.com/*"],
+      "js": ["src/content-scripts/grok.ts"]
+    },
+    {
+      "matches": ["https://delphi.ai/*"],
+      "js": ["src/content-scripts/delphi.ts"]
+    },
+    {
+      "matches": ["http://localhost:3001/api/auth/*"],
+      "js": ["src/content-scripts/auth-callback.ts"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "OpenMemo"
+  },
+  "icons": {
+    "128": "icon.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["logo.png", "icon.png", "auth-callback.html"],
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://t3.chat/*",
+        "https://perplexity.ai/*",
+        "https://gemini.google.com/*",
+        "https://chat.deepseek.com/*",
+        "https://grok.com/*",
+        "https://delphi.ai/*"
+      ]
+    }
+  ]
+}

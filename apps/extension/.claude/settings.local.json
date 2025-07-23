@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun run:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(bun build:*)",
+      "Bash(tsc --noEmit)",
+      "Bash(bunx tsc:*)",
+      "Bash(bun:*)",
+      "Bash(rm:*)",
+      "Bash(grep:*)",
+      "WebFetch(domain:console.groq.com)",
+      "Bash(npx eslint:*)",
+      "Bash(node:*)"
+    ],
+    "deny": []
+  }
+}

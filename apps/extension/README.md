@@ -1,69 +1,66 @@
-# React + TypeScript + Vite
+# OpenMemo Extension
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Chrome extension for universal AI memory integration. For general project information and setup, see the [main README](../../README.md).
 
-Currently, two official plugins are available:
+## Extension-Specific Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Building the Extension
 
-## Expanding the ESLint configuration
+```bash
+# Development build
+bun run build
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+# Production build (for Chrome Web Store)
+bun run build:prod
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Development server with hot reload
+bun dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Loading in Chrome
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Build the extension: `bun run build`
+2. Open `chrome://extensions/`
+3. Enable "Developer mode"
+4. Click "Load unpacked"
+5. Select the `dist` folder
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+
+### Platform Integration
+
+Each platform integration follows this pattern:
+
+1. **Button Injection**: Adds "Load Memories" button to platform UI
+2. **Context Detection**: Detects current conversation context
+3. **Memory Loading**: Fetches relevant memories from API
+4. **Text Insertion**: Inserts selected memories into platform composer
+
+
+### Adding New Platforms
+
+To add a new AI platform:
+
+1. **Create content script**: `src/content-scripts/newplatform.ts`
+2. **Add to manifest**: Update `public/manifest.json` with host permissions and content script
+3. **Add to build**: Update `vite.config.ts` input configuration
+4. **Test integration**: Verify button injection and memory loading works
+
+### Configuration
+
+Copy `.env.example` to `.env` and configure with your API settings.
+
+### Chrome Web Store Preparation
+
+For production release:
+
+1. Build with `bun run build:prod`
+2. Test in Chrome with `Load unpacked`
+3. Zip the `dist` folder contents
+4. Upload to Chrome Web Store Developer Dashboard
+
+### Debugging
+
+- **Extension Console**: Right-click extension icon → "Inspect popup"
+- **Content Script Console**: Open browser DevTools on AI platform pages
+- **Background Script**: Go to `chrome://extensions/` → Click extension details → Inspect background script
+
