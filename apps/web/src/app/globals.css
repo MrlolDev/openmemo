@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary-50: #f6ffed;
+  --color-primary-75: #f0fde4;
+  --color-primary-100: #e9fdde;
+  --color-primary-150: #e2fcd7;
+  --color-primary-200: #dcfbd0;
+  --color-primary-250: #d5fac9;
+  --color-primary-300: #cff8c3;
+  --color-primary-350: #c8f7bc;
+  --color-primary-400: #c1f6b5;
+  --color-primary-500: #afff33;
+  --color-primary-600: #9de62e;
+  --color-primary-700: #8acc29;
+  --color-primary-800: #78b324;
+  --color-primary-900: #65991f;
+  --color-primary-1000: #53801a;
+  --color-primary-1100: #406614;
+  --color-primary-1200: #2e4d0f;
+  --color-primary-1300: #1c330a;
+  --color-primary-1400: #091a05;
+  --color-primary-1500: #040d02;
+
+  --font-sans: "Poppins", sans-serif;
+
+  --color-primary-glow: rgba(175, 255, 51, 0.2);
+  --color-primary-50-glow: rgba(246, 255, 237, 0.2);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.bg-gradient-to-bottom {
+  @apply bg-[url('/Noise.webp'),linear-gradient(to_bottom,var(--color-primary-1500),var(--color-primary-1300))] bg-repeat;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.bg-gradient-to-top {
+  @apply bg-[url('/Noise.webp'),linear-gradient(to_top,var(--color-primary-1500),var(--color-primary-1300))] bg-repeat;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.transition-properties {
+  @apply transition-all duration-150;
+}
+
+.primary-glow {
+  @apply drop-shadow-[0_0px_25px_var(--color-primary-glow)];
+}
+
+.primary-glow-hover {
+  @apply hover:drop-shadow-[0_0px_25px_var(--color-primary-50-glow)];
 }
