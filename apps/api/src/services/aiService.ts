@@ -1,9 +1,15 @@
-import Groq from 'groq-sdk';
-import { vectorService } from './vectorService';
+import OpenAI from "openai";
+import { vectorService } from "./vectorService";
+import {
+  parseAiJsonResponse,
+  safeParseAiJson,
+  parseCategorizeResponse,
+} from "../utils/parseJson";
 
-// Initialize Groq client with Moonshot AI model
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
+// Initialize OpenAI client with nahcrof.com base URL
+const openai = new OpenAI({
+  apiKey: process.env.NAHCROF_API_KEY,
+  baseURL: "https://ai.nahcrof.com/v2",
 });
 
 interface Memory {
@@ -18,33 +24,71 @@ interface Memory {
 // AI Service using Moonshot AI Kimi K2 Instruct model with structured JSON outputs
 
 export class AIService {
-  async findRelevantMemories(query: string, memories: Memory[], maxResults: number = 5): Promise<Memory[]> {
+  async findRelevantMemories(
+    query: string,
+    memories: Memory[],
+    maxResults: number = 5,
+    userId?: string
+  ): Promise<Memory[]> {
     if (!memories.length || !query.trim()) {
       return [];
     }
 
     try {
       // First, try vector-based semantic search for better performance and accuracy
-      const vectorResults = await vectorService.searchMemories(query, '', maxResults, 0.1);
-      
-      if (vectorResults.length > 0) {
-        // Convert vector results back to Memory objects
-        const relevantMemories = vectorResults
-          .map(result => memories.find(m => m.id === result.id))
-          .filter(Boolean) as Memory[];
-        
-        if (relevantMemories.length > 0) {
-          console.log(`Vector search found ${relevantMemories.length} relevant memories`);
+      // If userId is provided, use it for more accurate search
+      if (userId) {
+        const vectorResults = await vectorService.searchMemories(
+          query,
+          userId,
+          maxResults,
+          0.1
+        );
+
+        if (vectorResults.length > 0) {
+          // Convert vector results back to Memory objects maintaining similarity order
+          const relevantMemories = vectorResults
+            .map((result) => memories.find((m) => m.id === result.id))
+            .filter(Boolean) as Memory[];
+
+          console.log(
+            `Vector search found ${relevantMemories.length} relevant memories`
+          );
           return relevantMemories.slice(0, maxResults);
+        }
+      } else {
+        // Fallback: try vector search without userId (less accurate but still useful)
+        const vectorResults = await vectorService.searchMemories(
+          query,
+          "",
+          maxResults,
+          0.1
+        );
+
+        if (vectorResults.length > 0) {
+          // Convert vector results back to Memory objects
+          const relevantMemories = vectorResults
+            .map((result) => memories.find((m) => m.id === result.id))
+            .filter(Boolean) as Memory[];
+
+          if (relevantMemories.length > 0) {
+            console.log(
+              `Vector search found ${relevantMemories.length} relevant memories`
+            );
+            return relevantMemories.slice(0, maxResults);
+          }
         }
       }
 
       // Fallback to AI-based analysis for smaller datasets or when vector search fails
-      console.log('Falling back to AI-based memory analysis');
-      
-      const memoriesText = memories.map((memory, index) => 
-        `[${index}] ${memory.content} (Category: ${memory.category})`
-      ).join('\n\n');
+      console.log("Falling back to AI-based memory analysis");
+
+      const memoriesText = memories
+        .map(
+          (memory, index) =>
+            `[${index}] ${memory.content} (Category: ${memory.category})`
+        )
+        .join("\n\n");
 
       const prompt = `Given the user's query: "${query}"
 
@@ -65,46 +109,48 @@ Respond with a JSON object in this exact format:
 
 If no memories are relevant, return an empty array for indices.`;
 
-      const completion = await groq.chat.completions.create({
+      const completion = await openai.chat.completions.create({
         messages: [
           {
-            role: 'user',
+            role: "user",
             content: prompt,
           },
         ],
-        model: 'moonshotai/kimi-k2-instruct',
+        model: "kimi-k2-turbo",
         temperature: 0.1,
         max_tokens: 200,
-        response_format: { type: 'json_object' }
+        response_format: { type: "json_object" },
       });
 
       const responseContent = completion.choices[0]?.message?.content;
-      
+
       if (!responseContent) {
         return [];
       }
 
-      // Parse the JSON response
-      const parsedResponse = JSON.parse(responseContent);
+      // Parse the JSON response using robust parser
+      const parsedResponse = parseAiJsonResponse(responseContent);
       const indices = parsedResponse.indices || [];
-      
+
       // Validate indices are within bounds
-      const validIndices = indices.filter((i: number) => 
-        Number.isInteger(i) && i >= 0 && i < memories.length
+      const validIndices = indices.filter(
+        (i: number) => Number.isInteger(i) && i >= 0 && i < memories.length
       );
 
       // Return the corresponding memories
       return validIndices.map((i: number) => memories[i]).slice(0, maxResults);
-
     } catch (error) {
-      console.error('Error finding relevant memories with AI:', error);
-      
+      console.error("Error finding relevant memories with AI:", error);
+
       // Final fallback to simple text search
-      const searchTerms = query.toLowerCase().split(' ').filter(term => term.length > 2);
+      const searchTerms = query
+        .toLowerCase()
+        .split(" ")
+        .filter((term) => term.length > 2);
       return memories
-        .filter(memory => {
+        .filter((memory) => {
           const content = memory.content.toLowerCase();
-          return searchTerms.some(term => content.includes(term));
+          return searchTerms.some((term) => content.includes(term));
         })
         .slice(0, maxResults);
     }
@@ -129,53 +175,72 @@ Respond with a JSON object in this exact format:
 
 Example tags: technology, programming, project idea, web development`;
 
-      const completion = await groq.chat.completions.create({
+      const completion = await openai.chat.completions.create({
         messages: [
           {
-            role: 'user',
+            role: "user",
             content: prompt,
           },
         ],
-        model: 'moonshotai/kimi-k2-instruct',
+        model: "kimi-k2-turbo",
         temperature: 0.3,
         max_tokens: 100,
-        response_format: { type: 'json_object' }
+        response_format: { type: "json_object" },
       });
 
       const responseContent = completion.choices[0]?.message?.content;
-      
+
       if (!responseContent) {
         return [];
       }
 
-      // Parse the JSON response
-      const parsedResponse = JSON.parse(responseContent);
+      // Parse the JSON response using robust parser
+      const parsedResponse = parseAiJsonResponse(responseContent);
       const tags = parsedResponse.tags || [];
-      
+
       return tags
         .map((tag: string) => tag.trim().toLowerCase())
         .filter((tag: string) => tag.length > 0 && tag.length <= 30)
         .slice(0, 5);
-
     } catch (error) {
-      console.error('Error generating memory tags with AI:', error);
+      console.error("Error generating memory tags with AI:", error);
       return [];
     }
   }
 
-  async categorizeMemory(content: string, availableCategories?: string[]): Promise<string> {
+  async categorizeMemory(
+    content: string,
+    availableCategories?: string[]
+  ): Promise<string> {
     try {
       // Use fixed categories or fall back to default categories
       const categories = availableCategories || [
-        'Personal Info', 'Work & Career', 'Food & Recipes', 'Entertainment',
-        'Travel & Places', 'Health & Fitness', 'Learning & Education',
-        'Hobbies & Interests', 'Relationships', 'Finance & Money',
-        'Technology', 'Home & Lifestyle', 'Goals & Planning', 'General'
+        "Personal Info",
+        "Work & Career",
+        "Food & Recipes",
+        "Entertainment",
+        "Travel & Places",
+        "Health & Fitness",
+        "Learning & Education",
+        "Hobbies & Interests",
+        "Relationships",
+        "Finance & Money",
+        "Technology",
+        "Home & Lifestyle",
+        "Goals & Planning",
+        "General",
       ];
 
-      const categoriesList = categories.map(cat => `- ${cat}`).join('\n');
+      const categoriesList = categories.map((cat) => `- ${cat}`).join("\n");
 
-      const prompt = `You are an expert at categorizing personal memories. Analyze the following memory and categorize it accurately.
+      const prompt = `You are an expert at categorizing personal memories. Your task is to analyze the memory content and select the MOST APPROPRIATE category from the provided list.
+
+CRITICAL INSTRUCTIONS:
+1. You MUST respond with valid JSON in the exact format specified
+2. The "category" field MUST be one of the exact category names from the list below
+3. Do NOT create new categories or modify existing ones
+4. Be specific and avoid defaulting to "General" unless truly necessary
+5. Focus on the PRIMARY purpose/topic of the memory
 
 Available categories:
 ${categoriesList}
@@ -226,56 +291,53 @@ Examples: "I collect vintage guitars", "Started learning photography", "Play ten
 **General**: Information that doesn't clearly fit into other categories, general observations, miscellaneous notes.
 Examples: "The weather was nice today", "Random thought about life", "Interesting fact I learned"
 
-Analyze the memory content carefully and choose the MOST SPECIFIC and RELEVANT category. Avoid defaulting to "General" unless the content truly doesn't fit any other category.
+IMPORTANT DECISION PROCESS:
+1. Read the memory content carefully
+2. Identify the PRIMARY topic or purpose
+3. Match it to the MOST SPECIFIC category available
+4. Only use "General" if NO other category fits
+5. Provide HIGH confidence (0.8-1.0) for clear matches
+6. Provide LOWER confidence (0.5-0.7) for uncertain matches
 
-Respond with a JSON object in this exact format:
+You MUST respond with valid JSON in this EXACT format (no markdown, no extra text):
 {
-  "category": "exact category name from the list",
+  "category": "exact category name from the list above",
   "confidence": 0.95,
   "reasoning": "brief explanation of why this category was chosen"
 }`;
 
-      const completion = await groq.chat.completions.create({
+      const completion = await openai.chat.completions.create({
         messages: [
           {
-            role: 'user',
+            role: "user",
             content: prompt,
           },
         ],
-        model: 'moonshotai/kimi-k2-instruct',
-        temperature: 0.1,
-        max_tokens: 200,
-        response_format: { type: 'json_object' }
+        model: "kimi-k2-turbo",
+        temperature: 0.0, // Use 0 for maximum consistency
+        max_tokens: 150, // Reduce tokens for more focused responses
+        response_format: { type: "json_object" },
       });
 
       const responseContent = completion.choices[0]?.message?.content;
-      
+
       if (!responseContent) {
-        return 'General';
+        return "General";
       }
 
-      // Parse the JSON response
-      const parsedResponse = JSON.parse(responseContent);
-      const suggestedCategory = parsedResponse.category;
-      
-      // Validate the category is in our list
-      if (suggestedCategory && categories.includes(suggestedCategory)) {
-        console.log(`Categorized memory as '${suggestedCategory}' with confidence ${parsedResponse.confidence}: ${parsedResponse.reasoning}`);
-        return suggestedCategory;
-      }
+      // Parse the JSON response using robust categorization parser
+      const result = parseCategorizeResponse(responseContent, categories);
 
-      console.log(`Invalid category '${suggestedCategory}' suggested, defaulting to General`);
-      return 'General';
-
+      return result.category;
     } catch (error) {
-      console.error('Error categorizing memory with AI:', error);
-      return 'General';
+      console.error("Error categorizing memory with AI:", error);
+      return "General";
     }
   }
 
   async detectNewMemoryInQuery(
-    query: string, 
-    existingMemories: Memory[] = [], 
+    query: string,
+    existingMemories: Memory[] = [],
     availableCategories?: string[]
   ): Promise<{
     hasNewMemory: boolean;
@@ -286,19 +348,30 @@ Respond with a JSON object in this exact format:
   }> {
     try {
       const categories = availableCategories || [
-        'Personal Info', 'Work & Career', 'Food & Recipes', 'Entertainment',
-        'Travel & Places', 'Health & Fitness', 'Learning & Education',
-        'Hobbies & Interests', 'Relationships', 'Finance & Money',
-        'Technology', 'Home & Lifestyle', 'Goals & Planning', 'General'
+        "Personal Info",
+        "Work & Career",
+        "Food & Recipes",
+        "Entertainment",
+        "Travel & Places",
+        "Health & Fitness",
+        "Learning & Education",
+        "Hobbies & Interests",
+        "Relationships",
+        "Finance & Money",
+        "Technology",
+        "Home & Lifestyle",
+        "Goals & Planning",
+        "General",
       ];
 
-      const categoriesList = categories.map(cat => `- ${cat}`).join('\n');
-      
+      const categoriesList = categories.map((cat) => `- ${cat}`).join("\n");
+
       // Prepare existing memories context (limit to recent ones to avoid token overflow)
       const recentMemories = existingMemories.slice(0, 20);
-      const existingMemoriesContext = recentMemories.length > 0 
-        ? `\n\nExisting memories to check against (avoid duplicates):\n${recentMemories.map((m, i) => `${i + 1}. ${m.content} (${m.category})`).join('\n')}`
-        : '';
+      const existingMemoriesContext =
+        recentMemories.length > 0
+          ? `\n\nExisting memories to check against (avoid duplicates):\n${recentMemories.map((m, i) => `${i + 1}. ${m.content} (${m.category})`).join("\n")}`
+          : "";
 
       const prompt = `You are an expert at detecting new personal memory information. Analyze the user query to determine if it contains NEW personal information that should be saved as a memory.
 
@@ -345,50 +418,91 @@ Respond with a JSON object in this exact format:
   "reasoning": "explanation of why this is/isn't new memory information"
 }`;
 
-      const completion = await groq.chat.completions.create({
+      const completion = await openai.chat.completions.create({
         messages: [
           {
-            role: 'user',
+            role: "user",
             content: prompt,
           },
         ],
-        model: 'moonshotai/kimi-k2-instruct',
+        model: "kimi-k2-turbo",
         temperature: 0.1,
         max_tokens: 300,
-        response_format: { type: 'json_object' }
+        response_format: { type: "json_object" },
       });
 
       const responseContent = completion.choices[0]?.message?.content;
-      
+
       if (!responseContent) {
         return { hasNewMemory: false };
       }
 
-      // Parse the JSON response
-      const parsedResponse = JSON.parse(responseContent);
-      
+      // Parse the JSON response using robust parser
+      const parsedResponse = parseAiJsonResponse(responseContent);
+
       // Validate the response
       const hasNewMemory = parsedResponse.hasNewMemory === true;
-      const extractedMemory = hasNewMemory ? (parsedResponse.extractedMemory || '').trim() : '';
-      const category = hasNewMemory && categories.includes(parsedResponse.category) 
-        ? parsedResponse.category 
-        : 'General';
-      
+      const extractedMemory = hasNewMemory
+        ? (parsedResponse.extractedMemory || "").trim()
+        : "";
+      const category =
+        hasNewMemory && categories.includes(parsedResponse.category)
+          ? parsedResponse.category
+          : "General";
+
       if (hasNewMemory) {
-        console.log(`Detected new memory: '${extractedMemory}' in category '${category}' with confidence ${parsedResponse.confidence}`);
+        console.log(
+          `Detected new memory: '${extractedMemory}' in category '${category}' with confidence ${parsedResponse.confidence}`
+        );
       }
-      
+
       return {
         hasNewMemory,
         extractedMemory,
         category,
         confidence: parsedResponse.confidence || 0,
-        reasoning: parsedResponse.reasoning || ''
+        reasoning: parsedResponse.reasoning || "",
       };
+    } catch (error) {
+      console.error("Error detecting new memory in query:", error);
+      return { hasNewMemory: false };
+    }
+  }
+
+  /**
+   * Find memories similar to a given memory using vector similarity
+   */
+  async findSimilarMemories(
+    memoryId: string,
+    userId: string,
+    maxResults: number = 5,
+    similarityThreshold: number = 0.3
+  ): Promise<Memory[]> {
+    try {
+      // Use vector service to find similar memories
+      const vectorResults = await vectorService.findSimilarMemories(
+        memoryId,
+        userId,
+        maxResults,
+        similarityThreshold
+      );
+
+      // Convert vector results to Memory format
+      const similarMemories: Memory[] = vectorResults.map(result => ({
+        id: result.id,
+        content: result.content,
+        category: result.category,
+        source: 'similar-search',
+        tags: result.tags.split(',').filter(tag => tag.trim()),
+        createdAt: result.createdAt
+      }));
+
+      console.log(`Found ${similarMemories.length} similar memories for ${memoryId}`);
+      return similarMemories;
 
     } catch (error) {
-      console.error('Error detecting new memory in query:', error);
-      return { hasNewMemory: false };
+      console.error('Error finding similar memories:', error);
+      return [];
     }
   }
 }

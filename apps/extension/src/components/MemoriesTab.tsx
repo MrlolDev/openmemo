@@ -1,9 +1,9 @@
-import React from 'react';
-import type { Memory } from '../services/api';
-import MemoryCard from './MemoryCard';
-import AddMemoryForm from './AddMemoryForm';
-import CategoryTabs from './CategoryTabs';
-import Tooltip from './Tooltip';
+import React from "react";
+import type { Memory } from "../services/api";
+import MemoryCard from "./MemoryCard";
+import AddMemoryForm from "./AddMemoryForm";
+import CategoryTabs from "./CategoryTabs";
+import Tooltip from "./Tooltip";
 
 interface MemoriesTabProps {
   memories: Memory[];
@@ -40,14 +40,33 @@ const MemoriesTab: React.FC<MemoriesTabProps> = ({
   onNewMemoryChange,
   onFindSimilar,
 }) => {
-
   return (
     <div className="h-full flex flex-col relative">
-      {/* Card Container for all content */}
-      <div className="fluid-container flex-1 flex flex-col min-h-0">
+      {/* Main content container with background animation */}
+      <div className="flex-1 flex flex-col min-h-0 p-4 relative mx-2 my-2">
+        {/* Background animation container */}
+        <div className="absolute inset-0 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg overflow-hidden">
+          {/* Rotating conic gradient animation */}
+          <div
+            className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] pointer-events-none"
+            style={{
+              background: `conic-gradient(
+                from 0deg at 50% 50%,
+                transparent 0deg,
+                rgba(168, 255, 0, 0.1) 45deg,
+                transparent 90deg,
+                rgba(0, 212, 255, 0.1) 225deg,
+                transparent 270deg
+              )`,
+              animation: "rotate 20s linear infinite",
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#A8FF00]/8 via-transparent to-[#A8FF00]/4 opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-tl from-[#00D4FF]/6 via-transparent to-[#00FFB3]/6 opacity-40" />
+        </div>
         {isAddingMemory ? (
           /* Full-screen Add Memory Form - Replace entire card */
-          <div className="h-full animate-slide-in-right">
+          <div className="h-full animate-slide-in-right relative z-10">
             <AddMemoryForm
               newMemory={newMemory}
               onSave={onSaveMemory}
@@ -58,7 +77,7 @@ const MemoriesTab: React.FC<MemoriesTabProps> = ({
         ) : (
           <>
             {/* Compact Header Section */}
-            <div className="p-3 pb-2 flex-shrink-0">
+            <div className="pb-2 flex-shrink-0 relative z-10">
               {/* Search Bar - Always visible but compact */}
               <div className="mb-3">
                 <div className="relative">
@@ -84,10 +103,17 @@ const MemoriesTab: React.FC<MemoriesTabProps> = ({
                   {searchTerm && (
                     <Tooltip content="Clear search" position="left">
                       <button
-                        onClick={() => onSearchChange('')}
+                        onClick={() => onSearchChange("")}
                         className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80 p-1 rounded"
                       >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <line x1="18" y1="6" x2="6" y2="18"></line>
                           <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
@@ -108,8 +134,8 @@ const MemoriesTab: React.FC<MemoriesTabProps> = ({
             </div>
 
             {/* Content Area with more space */}
-            <div className="flex-1 overflow-y-auto min-h-0 px-3">
-              {/* Memories List */}
+            <div className="flex-1 overflow-y-auto min-h-0 relative z-10">
+              {/* Memories List - Simple spacing */}
               <div className="space-y-3 pb-20">
                 {filteredMemories.length === 0 ? (
                   <div className="text-center py-8">
@@ -139,7 +165,11 @@ const MemoriesTab: React.FC<MemoriesTabProps> = ({
                       key={memory.id}
                       memory={memory}
                       onDelete={() => onDeleteMemory(memory.id)}
-                      onFindSimilar={onFindSimilar ? () => onFindSimilar(memory.id) : undefined}
+                      onFindSimilar={
+                        onFindSimilar
+                          ? () => onFindSimilar(memory.id)
+                          : undefined
+                      }
                     />
                   ))
                 )}

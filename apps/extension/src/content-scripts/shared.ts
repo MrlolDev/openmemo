@@ -1,5 +1,6 @@
 // Shared utilities for content scripts
 import { apiService, type Memory } from "../services/api";
+import { universalAuthCheck, universalApiRequest } from "../utils/cspBypass";
 import "../styles/content-scripts.css";
 
 // Platform-specific textarea selectors
@@ -191,7 +192,12 @@ export async function loadMemoriesForPlatform() {
       console.log("OpenMemo: Direct load memories called");
     }
 
-    const isAuthenticated = await apiService.isAuthenticated();
+    // Use universal auth check that automatically handles CSP restrictions
+    const authResult = await universalAuthCheck(
+      () => apiService.isAuthenticated()
+    );
+    const isAuthenticated = authResult.isAuthenticated;
+
     if (!isAuthenticated) {
       showNotification("Please sign in to OpenMemo to access your memories", "error");
       
@@ -229,7 +235,10 @@ export async function loadMemoriesForPlatform() {
 
     if (!query) {
       // If no context, just load recent memories
-      const result = await apiService.getMemories({ limit: 5 });
+      const result = await universalApiRequest(
+        () => apiService.getMemories({ limit: 5 }),
+        { endpoint: '/memories', method: 'GET' }
+      );
       const memories = result.memories;
       
       if (memories.length === 0) {
@@ -237,18 +246,24 @@ export async function loadMemoriesForPlatform() {
         return;
       }
       
-      const memoryText = memories.map((m) => m.content).join("\n\n");
+      const memoryText = memories.map((m: Memory) => m.content).join("\n\n");
       insertMemoryIntoActiveInput(memoryText);
       showNotification(`Loaded ${memories.length} recent memories`, "success");
       return;
     }
 
     // Load relevant memories based on current context with automatic new memory extraction
-    const result = await apiService.getMemories({ 
-      query, 
-      limit: 5, 
-      extractNewMemories: true 
-    });
+    const result = await universalApiRequest(
+      () => apiService.getMemories({ 
+        query, 
+        limit: 5, 
+        extractNewMemories: true 
+      }),
+      { 
+        endpoint: `/memories?query=${encodeURIComponent(query)}&limit=5&extractNewMemories=true`,
+        method: 'GET'
+      }
+    );
     const memories = result.memories;
 
     // Notify about new memory extraction
@@ -264,7 +279,7 @@ export async function loadMemoriesForPlatform() {
       return;
     }
 
-    const memoryText = memories.map((m) => m.content).join("\n\n");
+    const memoryText = memories.map((m: Memory) => m.content).join("\n\n");
     insertMemoryIntoActiveInput(memoryText);
     
     const searchTypeText = result.searchType === 'vector-semantic' ? 'semantic' : 
@@ -445,8 +460,12 @@ export function showMemorySelector(
       resultsDiv.innerHTML =
         '<div class="flex items-center justify-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div></div>';
 
-      const isAuthenticated = await apiService.isAuthenticated();
-      if (!isAuthenticated) {
+      // Use universal auth check for CSP compatibility
+      const authResult = await universalAuthCheck(
+        () => apiService.isAuthenticated()
+      );
+      
+      if (!authResult.isAuthenticated) {
         resultsDiv.innerHTML =
           '<p class="text-red-500 text-sm text-center py-4">Please sign in to OpenMemo to access your memories</p>';
         
@@ -466,7 +485,14 @@ export function showMemorySelector(
         return;
       }
 
-      const result = await apiService.getMemories({ query, limit: 10 });
+      // Use universal API request for CSP compatibility
+      const result = await universalApiRequest(
+        () => apiService.getMemories({ query, limit: 10 }),
+        { 
+          endpoint: `/memories?query=${encodeURIComponent(query)}&limit=10`,
+          method: 'GET'
+        }
+      );
       const memories = result.memories;
 
       if (memories.length === 0) {

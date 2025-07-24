@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 import { apiService, type Memory, type User } from "./services/api";
 import { authService } from "./services/auth";
+import { versionService, type UpdateStatus } from "./services/versionService";
 import { FIXED_CATEGORIES } from "./constants/categories";
 import LoadingScreen from "./components/LoadingScreen";
 import WelcomeScreen from "./components/WelcomeScreen";
@@ -36,6 +37,8 @@ const App = () => {
   const [showAbout, setShowAbout] = useState(false);
   const [, setVectorStoreInitialized] = useState(false);
   const [showSimilarMemories, setShowSimilarMemories] = useState<string | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
+  const [showUpdateNotification, setShowUpdateNotification] = useState(false);
 
   const filteredMemories = memories.filter((memory) => {
     const matchesSearch =
@@ -87,12 +90,31 @@ const App = () => {
     // Initial auth check with a small delay to ensure auth service is ready
     setTimeout(() => {
       checkAuth();
+      checkForUpdates();
     }, 100);
 
     return () => {
       chrome.runtime.onMessage.removeListener(handleMessage);
       unsubscribeAuth();
     };
+  }, []);
+
+  const checkForUpdates = useCallback(async () => {
+    try {
+      const status = await versionService.getUpdateStatus();
+      setUpdateStatus(status);
+      
+      if (status.hasUpdate && status.updateMessage) {
+        setShowUpdateNotification(true);
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => {
+          setShowUpdateNotification(false);
+          versionService.clearBadge(); // Clear any badge
+        }, 5000);
+      }
+    } catch (error) {
+      console.error('Failed to check for updates:', error);
+    }
   }, []);
 
   const checkAuth = useCallback(async () => {
@@ -334,6 +356,36 @@ const App = () => {
         {/* Footer */}
         <PopupFooter onShowAbout={setShowAbout} />
       </div>
+
+      {/* Update Notification */}
+      {showUpdateNotification && updateStatus?.updateMessage && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in-right">
+          <div className="bg-gradient-to-r from-[#A8FF00] to-[#85CC00] text-black px-4 py-3 rounded-lg shadow-2xl max-w-sm">
+            <div className="flex items-center gap-2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/>
+                <path d="M12 8h.01"/>
+              </svg>
+              <div className="flex-1">
+                <p className="font-medium text-sm">{updateStatus.updateMessage}</p>
+                {updateStatus.isFirstRun && (
+                  <p className="text-xs opacity-80 mt-1">Thanks for installing OpenMemo!</p>
+                )}
+              </div>
+              <button
+                onClick={() => setShowUpdateNotification(false)}
+                className="text-black/70 hover:text-black/90 p-1"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Similar Memories Modal */}
       {showSimilarMemories && (

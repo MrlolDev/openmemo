@@ -19,13 +19,13 @@ const PORT = process.env.PORT || 3001;
 
 // Rate limiting - separate limits for auth and other endpoints
 const generalLimiter = rateLimit({
-  windowMs: 30 * 1000, // 30 seconds
-  max: 50, // 50 requests per 30 seconds
+  windowMs: 60 * 1000, // 1 minute
+  max: 200, // 200 requests per minute (more reasonable for normal user operations)
 });
 
 const authLimiter = rateLimit({
-  windowMs: 30 * 1000, // 30 seconds
-  max: 100, // 100 auth requests per 30 seconds
+  windowMs: 15 * 60 * 1000, // 15 minutes 
+  max: 100, // 100 auth requests per 15 minutes (prevent auth abuse)
   message: "Too many authentication requests, please try again later.",
 });
 
@@ -55,8 +55,8 @@ app.get("/health", (req, res) => {
 
 // Routes with specific rate limiting
 app.use("/api/auth", authLimiter, authRouter);
-app.use("/api/memories", generalLimiter, authMiddleware, memoriesRouter);
-app.use("/api/users", generalLimiter, authMiddleware, usersRouter);
+app.use("/api/memories", generalLimiter, authMiddleware as any, memoriesRouter);
+app.use("/api/users", generalLimiter, authMiddleware as any, usersRouter);
 
 // Error handling
 app.use(

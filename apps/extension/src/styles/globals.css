@@ -566,14 +566,10 @@
   animation: water-ripple 2s ease-out infinite;
 }
 
-/* Fluid container styles */
+/* Fluid container styles - simplified */
 .fluid-container {
   background: rgba(26, 26, 26, 0.8);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(168, 255, 0, 0.1);
-  border-radius: 24px;
-  position: relative;
-  overflow: hidden;
 }
 
 .fluid-container::before {

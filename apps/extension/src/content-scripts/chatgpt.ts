@@ -1,6 +1,7 @@
 // Content script for ChatGPT.com
 import { apiService } from "../services/api";
 import { showNotification, loadMemoriesForPlatform } from "./shared";
+import { requestInterceptor } from "../services/requestInterceptor";
 
 console.log("OpenMemo: ChatGPT content script loaded");
 
@@ -13,6 +14,18 @@ if (document.readyState === "loading") {
 
 function initChatGPTIntegration() {
   console.log("OpenMemo: Initializing ChatGPT integration...");
+
+  // Start automatic memory loading via request interception
+  console.log("OpenMemo: Starting automatic memory loading for ChatGPT");
+  console.log("OpenMemo: Current provider detected:", requestInterceptor.getCurrentProvider());
+  
+  // Always try to start interception for ChatGPT - the service will check provider internally
+  if (window.location.hostname.includes('chatgpt.com') || window.location.hostname.includes('chat.openai.com')) {
+    console.log("OpenMemo: Confirmed on ChatGPT domain, starting request interception");
+    requestInterceptor.startIntercepting();
+  } else {
+    console.log("OpenMemo: Not on ChatGPT domain, skipping request interception");
+  }
 
   // Monitor for changes in the DOM to handle dynamic content
   const observer = new MutationObserver((mutations) => {

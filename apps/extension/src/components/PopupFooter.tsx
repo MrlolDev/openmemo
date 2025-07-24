@@ -1,13 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { versionService } from '../services/versionService';
 
 interface PopupFooterProps {
   onShowAbout: (show: boolean) => void;
 }
 
 const PopupFooter: React.FC<PopupFooterProps> = ({ onShowAbout }) => {
+  const [version, setVersion] = useState('v1.0.0');
+
+  useEffect(() => {
+    versionService.getVersionDisplay().then(setVersion).catch(() => {
+      // Fallback to default version if service fails
+      setVersion('v1.0.0');
+    });
+  }, []);
+
   return (
-    <div>
-      <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 bg-[#0a0a0a] mt-4">
+    <div className="mt-auto">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 bg-[#0a0a0a]">
         <div className="flex items-center gap-2">
           <button
             onClick={() => onShowAbout(true)}
@@ -35,7 +45,7 @@ const PopupFooter: React.FC<PopupFooterProps> = ({ onShowAbout }) => {
           rel="noopener noreferrer"
           className="text-xs text-white/60 hover:text-[#A8FF00] transition-colors cursor-pointer underline-offset-2 hover:underline"
         >
-          v1.0.0
+          {version}
         </a>
       </div>
     </div>

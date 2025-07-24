@@ -1,4 +1,6 @@
 // OpenMemo supported services configuration
+import { getSupportedProviders } from './unified-providers';
+
 export interface Service {
   id: string;
   name: string;
@@ -9,64 +11,56 @@ export interface Service {
   description: string;
 }
 
-export const ALL_SERVICES: Service[] = [
-  // Currently Supported
-  {
-    id: 'chatgpt',
-    name: 'ChatGPT',
-    hostname: 'chatgpt.com',
-    status: 'supported',
-    icon: '🤖',
-    color: '#10a37f',
-    description: 'OpenAI\'s conversational AI assistant'
-  },
-  {
-    id: 'claude',
-    name: 'Claude',
-    hostname: 'claude.ai',
-    status: 'supported',
-    icon: '🎭',
-    color: '#f97316',
-    description: 'Anthropic\'s AI assistant focused on helpfulness and safety'
-  },
-  {
-    id: 'perplexity',
-    name: 'Perplexity',
-    hostname: 'perplexity.ai',
-    status: 'supported',
-    icon: '🔮',
-    color: '#8B5CF6',
-    description: 'AI-powered search and research assistant'
-  },
-  {
-    id: 'gemini',
-    name: 'Gemini',
-    hostname: 'gemini.google.com',
-    status: 'supported',
-    icon: '💎',
-    color: '#1a73e8',
-    description: 'Google\'s multimodal AI assistant'
-  },
-  {
-    id: 'deepseek',
-    name: 'DeepSeek',
-    hostname: 'chat.deepseek.com',
-    status: 'supported',
-    icon: '🌊',
-    color: '#4F46E5',
-    description: 'Advanced reasoning AI with deep thinking capabilities'
-  },
-  {
-    id: 't3chat',
-    name: 'T3.chat',
-    hostname: 't3.chat',
-    status: 'supported',
-    icon: '⚡',
-    color: '#6366f1',
-    description: 'Fast and efficient AI chat interface'
-  },
+// Generate supported services from unified providers
+const supportedServicesFromProviders: Service[] = getSupportedProviders().map(({ key, config }) => ({
+  id: key,
+  name: config.name,
+  hostname: config.hostname,
+  status: 'supported' as const,
+  icon: getProviderIcon(key),
+  color: getProviderColor(key),
+  description: getProviderDescription(key)
+}));
 
-  // Coming Soon
+// Helper functions to get provider-specific UI data
+function getProviderIcon(providerId: string): string {
+  const iconMap: Record<string, string> = {
+    chatgpt: '🤖',
+    claude: '🎭',
+    deepseek: '🌊',
+    perplexity: '🔮',
+    gemini: '💎',
+    't3chat': '⚡',
+  };
+  return iconMap[providerId] || '🤖';
+}
+
+function getProviderColor(providerId: string): string {
+  const colorMap: Record<string, string> = {
+    chatgpt: '#10a37f',
+    claude: '#f97316',
+    deepseek: '#4F46E5',
+    perplexity: '#8B5CF6',
+    gemini: '#1a73e8',
+    't3chat': '#6366f1',
+  };
+  return colorMap[providerId] || '#6366f1';
+}
+
+function getProviderDescription(providerId: string): string {
+  const descriptionMap: Record<string, string> = {
+    chatgpt: 'OpenAI\'s conversational AI assistant',
+    claude: 'Anthropic\'s AI assistant focused on helpfulness and safety',
+    deepseek: 'Advanced reasoning AI with deep thinking capabilities',
+    perplexity: 'AI-powered search and research assistant',
+    gemini: 'Google\'s multimodal AI assistant',
+    't3chat': 'Fast and efficient AI chat interface',
+  };
+  return descriptionMap[providerId] || 'AI assistant';
+}
+
+// Coming soon services (not yet in unified providers)
+const comingSoonServices: Service[] = [
   {
     id: 'grok',
     name: 'Grok',
@@ -187,6 +181,12 @@ export const ALL_SERVICES: Service[] = [
     color: '#FF6B9D',
     description: 'Your personal AI companion for emotional support'
   }
+];
+
+// Combine supported and coming soon services
+export const ALL_SERVICES: Service[] = [
+  ...supportedServicesFromProviders,
+  ...comingSoonServices
 ];
 
 export const SUPPORTED_SERVICES = ALL_SERVICES.filter(service => service.status === 'supported');

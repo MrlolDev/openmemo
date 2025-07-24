@@ -1,12 +1,17 @@
 // Universal content script for all AI platforms
 import {
-  getPlatformConfig,
-  type PlatformConfig,
-} from "../config/platforms";
+  getPlatformConfigSync,
+  detectCurrentProvider,
+  getProviderConfig,
+  type UnifiedProviderConfig,
+} from "../config/unified-providers";
 import { loadMemoriesForPlatform } from "./shared";
+
+type PlatformConfig = UnifiedProviderConfig['ui'];
 
 // Performance optimizations
 let platformConfig: PlatformConfig | null = null;
+let fullProviderConfig: UnifiedProviderConfig | null = null;
 let observer: MutationObserver | null = null;
 let timeouts: number[] = [];
 let isInitialized = false;
@@ -65,9 +70,14 @@ function initUniversalIntegration() {
   if (isInitialized || window.openMemoUniversalRunning) return; // Prevent multiple initializations
   
   window.openMemoUniversalRunning = true;
-  platformConfig = getPlatformConfig();
+  platformConfig = getPlatformConfigSync();
+  
+  const providerKey = detectCurrentProvider();
+  if (providerKey) {
+    fullProviderConfig = getProviderConfig(providerKey);
+  }
 
-  if (!platformConfig) {
+  if (!platformConfig || !fullProviderConfig) {
     console.log(
       "OpenMemo: No platform configuration found for",
       window.location.hostname
@@ -76,7 +86,7 @@ function initUniversalIntegration() {
   }
 
   isInitialized = true;
-  console.log(`OpenMemo: Initializing efficient system for ${platformConfig.name}`);
+  console.log(`OpenMemo: Initializing efficient system for ${fullProviderConfig.name}`);
 
   // Throttled mutation observer for better performance
   observer = new MutationObserver(throttle((mutations) => {
@@ -107,15 +117,15 @@ function initUniversalIntegration() {
 
 function scheduleRetries() {
   // Claude.ai needs more time and more retries due to dynamic loading
-  const isClaudeAi = platformConfig?.name === "Claude";
+  const isClaudeAi = fullProviderConfig?.name === "Claude";
   const retryIntervals = isClaudeAi 
     ? [1000, 2000, 3000, 5000, 7000, 10000, 15000] // More retries for Claude
     : [1000, 2000, 5000, 10000]; // Standard retries for others
   
   retryIntervals.forEach((interval, index) => {
     const timeoutId = window.setTimeout(() => {
-      if (!buttonInserted && platformConfig) {
-        console.log(`OpenMemo: Retry ${index + 1} for ${platformConfig.name}`);
+      if (!buttonInserted && fullProviderConfig) {
+        console.log(`OpenMemo: Retry ${index + 1} for ${fullProviderConfig.name}`);
         checkForContainer();
       }
     }, interval);
@@ -125,8 +135,10 @@ function scheduleRetries() {
 }
 
 // Platform readiness checks
-function isPlatformReady(config: PlatformConfig): boolean {
-  switch (config.name) {
+function isPlatformReady(): boolean {
+  if (!fullProviderConfig) return false;
+  
+  switch (fullProviderConfig.name) {
     case "Claude":
       // Claude needs main content area and composer to be loaded
       const claudeMain = document.querySelector("main");
@@ -203,18 +215,18 @@ function checkForContainer() {
   lastCheckTime = now;
 
   // Platform-specific readiness checks
-  if (!isPlatformReady(platformConfig)) {
-    console.log(`OpenMemo: ${platformConfig.name} not ready yet, waiting...`);
+  if (!isPlatformReady()) {
+    console.log(`OpenMemo: ${fullProviderConfig?.name} not ready yet, waiting...`);
     return;
   }
 
-  console.log(`OpenMemo: Checking for ${platformConfig.name} container...`);
+  console.log(`OpenMemo: Checking for ${fullProviderConfig?.name} container...`);
   
   // Try primary container selector first
   let container = document.querySelector(platformConfig.selectors.container);
   
   // Platform-specific fallback selectors for dynamic content
-  if (!container && platformConfig.name === "DeepSeek") {
+  if (!container && fullProviderConfig?.name === "DeepSeek") {
     const fallbackSelectors = [
       ".ec4f5d61",
       "div[class*='ec4f5d61']", 
@@ -233,7 +245,7 @@ function checkForContainer() {
   }
   
   // Claude.ai specific fallbacks - try different container patterns
-  if (!container && platformConfig.name === "Claude") {
+  if (!container && fullProviderConfig?.name === "Claude") {
     const claudeFallbacks = [
       "div.relative.flex-1.flex.items-center.gap-2.shrink.min-w-0",
       "div.flex.items-center.gap-2 > div.flex.items-center.gap-1",
@@ -261,16 +273,16 @@ function checkForContainer() {
   }
   
   if (container) {
-    console.log(`OpenMemo: Found ${platformConfig.name} container with primary selector`);
+    console.log(`OpenMemo: Found ${fullProviderConfig?.name} container with primary selector`);
   } else {
-    console.log(`OpenMemo: Primary selector failed for ${platformConfig.name}, trying fallback approach...`);
+    console.log(`OpenMemo: Primary selector failed for ${fullProviderConfig?.name}, trying fallback approach...`);
     
     // Fallback approach: Find container intelligently
     container = findContainerIntelligently(platformConfig);
   }
 
   if (container && !container.querySelector(".openmemo-load-btn")) {
-    console.log(`OpenMemo: Adding button to ${platformConfig.name} container`);
+    console.log(`OpenMemo: Adding button to ${fullProviderConfig?.name} container`);
     addLoadMemoriesButton(container);
     buttonInserted = true; // Mark as inserted
     
@@ -284,9 +296,9 @@ function checkForContainer() {
     timeouts.forEach(clearTimeout);
     timeouts = [];
     
-    console.log(`OpenMemo: Button successfully inserted for ${platformConfig.name}, stopping all checks`);
+    console.log(`OpenMemo: Button successfully inserted for ${fullProviderConfig?.name}, stopping all checks`);
   } else if (container) {
-    console.log(`OpenMemo: Button already exists in ${platformConfig.name} container`);
+    console.log(`OpenMemo: Button already exists in ${fullProviderConfig?.name} container`);
     buttonInserted = true;
     
     // Also stop observing if button already exists
@@ -299,12 +311,12 @@ function checkForContainer() {
     timeouts.forEach(clearTimeout);
     timeouts = [];
   } else {
-    console.log(`OpenMemo: No suitable container found for ${platformConfig.name}`);
+    console.log(`OpenMemo: No suitable container found for ${fullProviderConfig?.name}`);
   }
 }
 
 function findContainerIntelligently(config: PlatformConfig): Element | null {
-  console.log(`OpenMemo: Using intelligent container detection for ${config.name}`);
+  console.log(`OpenMemo: Using intelligent container detection for ${fullProviderConfig?.name}`);
   
   // Strategy 1: Look for common button container patterns
   const buttonContainerSelectors = [
@@ -355,9 +367,9 @@ function findContainerIntelligently(config: PlatformConfig): Element | null {
     
     // Strategy 3: Create container if none found but composer exists
     if (composer.parentElement) {
-      console.log(`OpenMemo: Creating action container for ${config.name}`);
+      console.log(`OpenMemo: Creating action container for ${fullProviderConfig?.name}`);
       const actionContainer = document.createElement("div");
-      actionContainer.className = `openmemo-actions-${config.name.toLowerCase()} flex items-center gap-2`;
+      actionContainer.className = `openmemo-actions-${fullProviderConfig?.name.toLowerCase()} flex items-center gap-2`;
       actionContainer.style.cssText = "display: flex; align-items: center; gap: 8px; margin-left: 8px;";
       
       // Try to find the best position
@@ -524,14 +536,14 @@ function addLoadMemoriesButton(container: Element) {
   });
 
   // Smart positioning based on platform
-  insertButtonIntelligently(container, loadButton, platformConfig);
+  insertButtonIntelligently(container, loadButton);
 }
 
-function insertButtonIntelligently(container: Element, button: HTMLElement, config: PlatformConfig) {
-  console.log(`OpenMemo: Inserting button intelligently for ${config.name}`);
+function insertButtonIntelligently(container: Element, button: HTMLElement) {
+  console.log(`OpenMemo: Inserting button intelligently for ${fullProviderConfig?.name}`);
   
   // Platform-specific positioning rules
-  switch (config.name) {
+  switch (fullProviderConfig?.name) {
     case "Gemini":
       // For Gemini, wrap in toolbox item structure
       const toolboxItem = document.createElement("toolbox-drawer-item");

@@ -30,44 +30,39 @@ const SimilarMemories: React.FC<SimilarMemoriesProps> = ({ memoryId, onClose }) 
       setIsLoading(true);
       setError(null);
       
-      // First, get all memories to find the target memory
-      const allMemoriesResult = await apiService.getMemories({ limit: 1000 });
-      const targetMemoryData = allMemoriesResult.memories.find(m => m.id === memoryId);
-      
-      if (!targetMemoryData) {
-        setError('Target memory not found');
-        return;
-      }
-      
-      setTargetMemory({
-        id: targetMemoryData.id,
-        content: targetMemoryData.content,
-        category: targetMemoryData.category
+      // Use the dedicated similar memories API endpoint
+      const response = await fetch(`${apiService.getApiBaseUrl()}/api/memories/${memoryId}/similar?limit=5&threshold=0.3`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await getAuthToken()}`
+        }
       });
       
-      // Use vector search with the target memory's content to find similar memories
-      const vectorResult = await apiService.vectorSearch(targetMemoryData.content, 6, 0.1);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
-      // Filter out the target memory itself and format the results
-      const similarMemoriesData = vectorResult.results
-        .filter(memory => memory.id !== memoryId)
-        .slice(0, 5) // Limit to 5 similar memories
-        .map(memory => ({
-          id: memory.id,
-          content: memory.content,
-          category: memory.category,
-          tags: memory.tags,
-          createdAt: memory.createdAt,
-          similarity: memory.similarity
-        }));
+      const result = await response.json();
       
-      setSimilarMemories(similarMemoriesData);
+      setTargetMemory(result.sourceMemory);
+      setSimilarMemories(result.similarMemories || []);
     } catch (error) {
       console.error('Failed to load similar memories:', error);
-      setError('Failed to find similar memories using vector search');
+      setError('Failed to find similar memories');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper function to get auth token
+  const getAuthToken = async (): Promise<string | null> => {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(["openmemo_auth_tokens"], (result) => {
+        const tokens = result.openmemo_auth_tokens;
+        resolve(tokens?.accessToken || null);
+      });
+    });
   };
 
   const formatDate = (dateString: string) => {

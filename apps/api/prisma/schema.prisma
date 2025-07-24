@@ -25,20 +25,35 @@ model User {
 }
 
 model Memory {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
   content   String
-  category  String   @default("General")
-  source    String   @default("manual") // manual, chatgpt-export, claude-export
-  tags      String   @default("") // Comma-separated tags for better organization
+  category  String          @default("General")
+  source    String          @default("manual") // manual, chatgpt-export, claude-export
+  tags      String          @default("") // Comma-separated tags for better organization
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  embedding MemoryEmbedding?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   @@map("memories")
   @@index([userId])
   @@index([category])
   @@index([source])
+}
+
+model MemoryEmbedding {
+  id          String    @id @default(cuid())
+  memoryId    String    @unique
+  memory      Memory    @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  embedding   Float[]   // Vector embedding data
+  dimensions  Int       @default(1024) // Number of dimensions in the embedding
+  model       String    @default("multilingual-e5-large-instruct") // Model used to generate the embedding
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("memory_embeddings")
+  @@index([memoryId])
 }
 
 model ApiKey {
