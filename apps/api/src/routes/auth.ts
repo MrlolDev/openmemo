@@ -59,7 +59,7 @@ router.post('/:provider/url', async (req, res) => {
         const authUrlObj = new URL('https://github.com/login/oauth/authorize');
         authUrlObj.searchParams.set('client_id', GITHUB_CLIENT_ID);
         authUrlObj.searchParams.set('redirect_uri', `${API_BASE_URL}/api/auth/${provider}/callback`);
-        authUrlObj.searchParams.set('scope', 'user:email');
+        authUrlObj.searchParams.set('scope', 'user:email repo');
         authUrlObj.searchParams.set('state', state);
         authUrl = authUrlObj.toString();
         break;
@@ -307,13 +307,20 @@ router.post('/:provider/callback', async (req, res) => {
 
     if (user) {
       // Update existing user
+      const updateData: any = {
+        name: userData.name || userData.login,
+        githubId: provider === 'github' ? userData.id.toString() : user.githubId,
+        avatarUrl: userData.avatar_url,
+      };
+
+      // Store GitHub access token for repository operations
+      if (provider === 'github') {
+        updateData.githubToken = accessToken;
+      }
+
       user = await prisma.user.update({
         where: { id: user.id },
-        data: {
-          name: userData.name || userData.login,
-          githubId: provider === 'github' ? userData.id.toString() : user.githubId,
-          avatarUrl: userData.avatar_url,
-        },
+        data: updateData,
       });
     } else {
       // Create new user
@@ -325,9 +332,33 @@ router.post('/:provider/callback', async (req, res) => {
 
       if (provider === 'github') {
         createData.githubId = userData.id.toString();
+        createData.githubToken = accessToken; // Store GitHub access token
       }
 
       user = await prisma.user.create({ data: createData });
+
+      // For new GitHub users, set up their memory repository
+      if (provider === 'github') {
+        try {
+          const { GitHubService } = await import('../services/githubService');
+          const githubService = new GitHubService(accessToken);
+          const repoInfo = await githubService.createMemoryRepository(user.id);
+          
+          // Update user with repository information
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              memoryRepoOwner: repoInfo.owner,
+              memoryRepoName: repoInfo.repo,
+            },
+          });
+          
+          console.log(`Created memory repository for new user ${user.id}: ${repoInfo.owner}/${repoInfo.repo}`);
+        } catch (repoError) {
+          console.error('Failed to create memory repository for new user:', repoError);
+          // Don't fail authentication if repository creation fails
+        }
+      }
     }
 
     // Generate tokens

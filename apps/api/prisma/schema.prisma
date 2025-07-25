@@ -11,35 +11,39 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  name      String?
-  githubId  String?    @unique
-  avatarUrl String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  memories  Memory[]
-  queryLogs QueryLog[]
+  id              String     @id @default(cuid())
+  email           String     @unique
+  name            String?
+  githubId        String?    @unique
+  avatarUrl       String?
+  githubToken     String?    // Encrypted GitHub access token for repository operations
+  memoryRepoOwner String?    // GitHub username
+  memoryRepoName  String?    // Repository name (usually 'openmemo-memories')
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  memories        Memory[]
+  queryLogs       QueryLog[]
 
   @@map("users")
 }
 
 model Memory {
-  id        String          @id @default(cuid())
-  content   String
-  category  String          @default("General")
-  source    String          @default("manual") // manual, chatgpt-export, claude-export
-  tags      String          @default("") // Comma-separated tags for better organization
-  userId    String
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  embedding MemoryEmbedding?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id          String          @id @default(cuid())
+  // Content is stored in GitHub memories.json file, only metadata here
+  category    String          @default("General")
+  source      String          @default("manual") // manual, chatgpt-export, claude-export
+  tags        String          @default("") // Comma-separated tags for better organization and search
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  embedding   MemoryEmbedding?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@map("memories")
   @@index([userId])
   @@index([category])
   @@index([source])
+  @@index([tags])
 }
 
 model MemoryEmbedding {

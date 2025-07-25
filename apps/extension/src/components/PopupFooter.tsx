@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { versionService } from '../services/versionService';
 
 interface PopupFooterProps {
-  onShowAbout: (show: boolean) => void;
+  // onShowAbout removed - now redirects to web
 }
 
-const PopupFooter: React.FC<PopupFooterProps> = ({ onShowAbout }) => {
+const PopupFooter: React.FC<PopupFooterProps> = ({}) => {
   const [version, setVersion] = useState('v1.0.0');
 
   useEffect(() => {
@@ -19,8 +19,10 @@ const PopupFooter: React.FC<PopupFooterProps> = ({ onShowAbout }) => {
     <div className="mt-auto">
       <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 bg-[#0a0a0a]">
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => onShowAbout(true)}
+          <a
+            href="https://openmemo.ai"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white/80 transition-colors cursor-pointer"
           >
             <svg
@@ -36,7 +38,7 @@ const PopupFooter: React.FC<PopupFooterProps> = ({ onShowAbout }) => {
               <path d="M12 8h.01" />
             </svg>
             About
-          </button>
+          </a>
         </div>
         
         <a

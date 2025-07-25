@@ -1,0 +1,359 @@
+/* OpenMemo Design System - Shared UI Package */
+
+/* CSS Variables for OpenMemo Design System */
+:root {
+  /* Colors - Dark Theme with Neon Accents */
+  --openmemo-bg-primary: #0d0d0d;
+  --openmemo-bg-surface: #1a1a1a;
+  --openmemo-bg-elevated: #262626;
+  
+  /* Primary Accent - Neon Lime Green */
+  --openmemo-primary: #A8FF00;
+  --openmemo-primary-dark: #85CC00;
+  --openmemo-primary-light: #BFFF33;
+  
+  /* Secondary Accents */
+  --openmemo-secondary-blue: #00D4FF;
+  --openmemo-secondary-teal: #00FFB3;
+  
+  /* Text Colors */
+  --openmemo-text-primary: #FFFFFF;
+  --openmemo-text-secondary: #CCCCCC;
+  --openmemo-text-muted: #888888;
+  
+  /* Border Colors */
+  --openmemo-border-primary: rgba(168, 255, 0, 0.2);
+  --openmemo-border-secondary: rgba(255, 255, 255, 0.1);
+  --openmemo-border-elevated: rgba(255, 255, 255, 0.15);
+  
+  /* Glass Effects */
+  --openmemo-glass-light: rgba(255, 255, 255, 0.05);
+  --openmemo-glass-medium: rgba(255, 255, 255, 0.08);
+  --openmemo-glass-strong: rgba(255, 255, 255, 0.12);
+  
+  /* Shadows */
+  --openmemo-shadow-sm: 0 4px 15px rgba(168, 255, 0, 0.1);
+  --openmemo-shadow-md: 0 8px 32px rgba(168, 255, 0, 0.15);
+  --openmemo-shadow-lg: 0 12px 40px rgba(168, 255, 0, 0.2);
+  --openmemo-shadow-glow: 0 0 20px rgba(168, 255, 0, 0.4);
+  
+  /* Border Radius */
+  --openmemo-radius-sm: 8px;
+  --openmemo-radius-md: 12px;
+  --openmemo-radius-lg: 24px;
+  --openmemo-radius-xl: 32px;
+  
+  /* Font Family */
+  --openmemo-font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  
+  /* Transitions */
+  --openmemo-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --openmemo-transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --openmemo-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Styles */
+.openmemo-base {
+  font-family: var(--openmemo-font-family);
+  background-color: var(--openmemo-bg-primary);
+  color: var(--openmemo-text-primary);
+}
+
+/* Scrollbar Styles */
+.openmemo-scrollbar::-webkit-scrollbar {
+  width: 12px;
+  background: transparent;
+}
+
+.openmemo-scrollbar::-webkit-scrollbar-track {
+  background: linear-gradient(
+    to bottom,
+    rgba(13, 13, 13, 0.8) 0%,
+    rgba(26, 26, 26, 0.6) 50%,
+    rgba(13, 13, 13, 0.8) 100%
+  );
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.openmemo-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    rgba(168, 255, 0, 0.6) 0%,
+    rgba(168, 255, 0, 0.8) 50%,
+    rgba(168, 255, 0, 0.6) 100%
+  );
+  border-radius: 8px;
+  border: 1px solid rgba(168, 255, 0, 0.2);
+  box-shadow: 
+    0 0 10px rgba(168, 255, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  transition: all var(--openmemo-transition-normal);
+}
+
+.openmemo-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    to bottom,
+    rgba(168, 255, 0, 0.8) 0%,
+    rgba(168, 255, 0, 1) 50%,
+    rgba(168, 255, 0, 0.8) 100%
+  );
+  box-shadow: 
+    0 0 20px rgba(168, 255, 0, 0.8),
+    0 0 5px rgba(168, 255, 0, 1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  border-color: rgba(168, 255, 0, 0.5);
+  transform: scaleX(1.1);
+}
+
+/* Selection Styles */
+.openmemo-base ::selection {
+  background-color: rgba(168, 255, 0, 0.2);
+  color: var(--openmemo-text-primary);
+}
+
+.openmemo-base ::-moz-selection {
+  background-color: rgba(168, 255, 0, 0.2);
+  color: var(--openmemo-text-primary);
+}
+
+/* Water Drop Animations and Effects */
+@keyframes openmemo-drip {
+  0% { border-radius: 60% 40% 30% 70%; }
+  25% { border-radius: 30% 60% 70% 40%; }
+  50% { border-radius: 50% 40% 60% 30%; }
+  75% { border-radius: 40% 70% 40% 60%; }
+  100% { border-radius: 60% 40% 30% 70%; }
+}
+
+@keyframes openmemo-float-drop {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  }
+  25% {
+    transform: translateY(-8px) rotate(2deg);
+    border-radius: 45% 55% 52% 48% / 58% 62% 38% 42%;
+  }
+  50% {
+    transform: translateY(-12px) rotate(-1deg);
+    border-radius: 52% 48% 55% 45% / 62% 58% 42% 38%;
+  }
+  75% {
+    transform: translateY(-8px) rotate(1deg);
+    border-radius: 48% 52% 48% 52% / 58% 62% 42% 38%;
+  }
+}
+
+@keyframes openmemo-ripple {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes openmemo-glow-pulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(168, 255, 0, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(168, 255, 0, 0.6); }
+}
+
+@keyframes openmemo-slide-in-right {
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes openmemo-slide-in-left {
+  0% { transform: translateX(-100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes openmemo-fade-in-scale {
+  0% { opacity: 0; transform: scale(0.95) translateY(-10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes openmemo-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes openmemo-rotate {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes openmemo-water-flow {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Animation Classes */
+.openmemo-animate-drip {
+  animation: openmemo-drip 4s ease-in-out infinite;
+}
+
+.openmemo-animate-floating-drop {
+  animation: openmemo-float-drop 4s ease-in-out infinite;
+}
+
+.openmemo-animate-ripple {
+  animation: openmemo-ripple 0.6s ease-out;
+}
+
+.openmemo-animate-glow-pulse {
+  animation: openmemo-glow-pulse 2s ease-in-out infinite;
+}
+
+.openmemo-animate-slide-in-right {
+  animation: openmemo-slide-in-right 0.3s ease-out forwards;
+}
+
+.openmemo-animate-slide-in-left {
+  animation: openmemo-slide-in-left 0.3s ease-out forwards;
+}
+
+.openmemo-animate-fade-in-scale {
+  animation: openmemo-fade-in-scale 0.2s ease-out forwards;
+  transform-origin: top right;
+}
+
+.openmemo-animate-float {
+  animation: openmemo-float 6s ease-in-out infinite;
+}
+
+.openmemo-animate-rotate {
+  animation: openmemo-rotate 20s linear infinite;
+}
+
+/* Utility Classes */
+.openmemo-glass {
+  background: var(--openmemo-glass-light);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--openmemo-border-secondary);
+}
+
+.openmemo-glass-medium {
+  background: var(--openmemo-glass-medium);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--openmemo-border-elevated);
+}
+
+.openmemo-glass-strong {
+  background: var(--openmemo-glass-strong);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--openmemo-border-elevated);
+}
+
+.openmemo-water-drop-primary {
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(ellipse at top, var(--openmemo-primary), var(--openmemo-primary-dark));
+  position: relative;
+  overflow: hidden;
+}
+
+.openmemo-water-drop-primary::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 20%;
+  width: 30%;
+  height: 30%;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  filter: blur(8px);
+}
+
+.openmemo-water-drop-secondary {
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(ellipse at top, var(--openmemo-secondary-blue), #0099CC);
+}
+
+.openmemo-water-surface {
+  background: linear-gradient(
+    180deg,
+    rgba(168, 255, 0, 0.1) 0%,
+    rgba(168, 255, 0, 0.05) 50%,
+    transparent 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.openmemo-water-surface::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: openmemo-water-flow 3s ease-in-out infinite;
+}
+
+/* Glow Effects */
+.openmemo-glow-sm {
+  box-shadow: var(--openmemo-shadow-sm);
+}
+
+.openmemo-glow-md {
+  box-shadow: var(--openmemo-shadow-md);
+}
+
+.openmemo-glow-lg {
+  box-shadow: var(--openmemo-shadow-lg);
+}
+
+.openmemo-glow-primary {
+  box-shadow: var(--openmemo-shadow-glow);
+}
+
+.openmemo-text-glow-primary {
+  text-shadow: 0 0 10px rgba(168, 255, 0, 0.5);
+}
+
+.openmemo-text-glow-secondary {
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* Hover Effects */
+.openmemo-hover-lift {
+  transition: transform var(--openmemo-transition-fast);
+}
+
+.openmemo-hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.openmemo-hover-scale {
+  transition: transform var(--openmemo-transition-fast);
+}
+
+.openmemo-hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.openmemo-hover-glow {
+  transition: box-shadow var(--openmemo-transition-normal);
+}
+
+.openmemo-hover-glow:hover {
+  box-shadow: var(--openmemo-shadow-glow);
+}
+
+/* Background Gradients */
+.openmemo-bg-gradient-primary {
+  background: linear-gradient(135deg, var(--openmemo-primary), var(--openmemo-primary-dark));
+}
+
+.openmemo-bg-gradient-surface {
+  background: linear-gradient(135deg, var(--openmemo-bg-surface), var(--openmemo-bg-elevated));
+}
+
+.openmemo-bg-gradient-radial {
+  background: radial-gradient(ellipse at center, var(--openmemo-glass-medium), var(--openmemo-glass-light));
+}

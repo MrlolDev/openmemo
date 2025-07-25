@@ -10,7 +10,7 @@ import PopupHeader from "./components/PopupHeader";
 // CategoryTabs now imported inside MemoriesTab
 import MemoriesTab from "./components/MemoriesTab";
 import PopupFooter from "./components/PopupFooter";
-import AboutScreen from "./components/AboutScreen";
+// AboutScreen removed - now redirects to web
 import SimilarMemories from "./components/SimilarMemories";
 import "./styles/globals.css";
 
@@ -34,7 +34,7 @@ const App = () => {
   // Remove activeTab state since we only have memories now
   const [usageStats, setUsageStats] = useState<any>(null);
   const [loadingStats, setLoadingStats] = useState(false);
-  const [showAbout, setShowAbout] = useState(false);
+  // showAbout removed - now redirects to web
   const [, setVectorStoreInitialized] = useState(false);
   const [showSimilarMemories, setShowSimilarMemories] = useState<string | null>(null);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
@@ -273,13 +273,7 @@ const App = () => {
     return <WelcomeScreen onSignInClick={handleGithubAuth} />;
   }
 
-  if (showAbout) {
-    return (
-      <div className="w-full h-full animate-slide-in-right">
-        <AboutScreen onClose={() => setShowAbout(false)} />
-      </div>
-    );
-  }
+  // About screen removed - now redirects to web via PopupFooter
 
   return (
     <div className="w-full h-full bg-[#0d0d0d] relative overflow-hidden flex flex-col m-0 p-0 animate-slide-in-left">
@@ -354,7 +348,7 @@ const App = () => {
         </div>
 
         {/* Footer */}
-        <PopupFooter onShowAbout={setShowAbout} />
+        <PopupFooter />
       </div>
 
       {/* Update Notification */}

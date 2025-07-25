@@ -3,6 +3,7 @@ import Navigation from "../components/sections/Navigation";
 import Hero from "../components/sections/Hero";
 import Logos from "../components/sections/Logos";
 import Features from "../components/sections/Features";
+import About from "../components/sections/About";
 import FAQs from "../components/sections/FAQs/FAQs";
 import Testimonials from "../components/sections/Tesimonials/Testimonials";
 import Footer from "../components/sections/Footer";

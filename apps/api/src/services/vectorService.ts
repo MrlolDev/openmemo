@@ -79,7 +79,7 @@ export class VectorService {
       const embedding = await this.generateEmbedding(embeddingText);
 
       // Use a single transaction to ensure atomicity
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: any) => {
         // Verify the memory exists before creating embedding
         const memoryExists = await tx.memory.findUnique({
           where: { id: memory.id },
@@ -443,7 +443,7 @@ export class VectorService {
         },
       });
 
-      const validMemoryIds = memoryIds.map((m) => m.id);
+      const validMemoryIds = memoryIds.map((m: any) => m.id);
 
       // Delete embeddings that don't have corresponding memories
       const result = await prisma.memoryEmbedding.deleteMany({
@@ -525,7 +525,7 @@ export class VectorService {
       const allMemoryIds = await prisma.memory.findMany({
         select: { id: true },
       });
-      const validMemoryIds = allMemoryIds.map((m) => m.id);
+      const validMemoryIds = allMemoryIds.map((m: any) => m.id);
 
       const embeddingsWithoutMemories = await prisma.memoryEmbedding.count({
         where: {

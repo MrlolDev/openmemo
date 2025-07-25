@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LogoBrand } from '@repo/ui';
 import type { User } from '../services/api';
 
 interface PopupHeaderProps {

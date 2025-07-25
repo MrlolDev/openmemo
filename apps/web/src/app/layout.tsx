@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: "OpenMemo | Your AI's Memory",
   description:
     "OpenMemo gives your AI a long-term memory, so you can pick up conversations where you left off, across any platform. Never lose context again.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

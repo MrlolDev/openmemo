@@ -104,7 +104,6 @@ OpenMemo is a 100% open-source AI memory integration tool that brings ChatGPT-st
 - [ ] Meta AI - Maybe?
 - [ ] HuggingChat - When they finish cooking
 
-
 ### Core Features
 
 - [x] Memory storage and retrieval
@@ -159,7 +158,70 @@ OpenMemo is a 100% open-source AI memory integration tool that brings ChatGPT-st
 - `bun check-types` - Run TypeScript checking
 - `bun format` - Format code with Prettier
 
-For app-specific commands, see individual README files in each app directory.
+**App-specific commands:**
+
+**Web App (`apps/web`):**
+
+- `cd apps/web && bun dev` - Next.js dev server with Turbopack on port 3000
+- `cd apps/web && bun build` - Build Next.js app
+- `cd apps/web && bun lint` - Next.js linting with zero warnings tolerance
+
+**Extension (`apps/extension`):**
+
+- `cd apps/extension && bun dev` - Vite dev server
+- `cd apps/extension && bun build` - Build extension for Chrome
+- `cd apps/extension && bun preview` - Preview production build
+
+**API (`apps/api`):**
+
+- `cd apps/api && bun dev` - Express development server with hot reload
+- `cd apps/api && bun build` - Build TypeScript to JavaScript
+- `cd apps/api && bun db:generate` - Generate Prisma client
+- `cd apps/api && bun db:push` - Push schema to database
+
+For more detailed documentation, see individual README files in each app directory.
+
+### Working with the Shared UI Package
+
+When developing new components or modifying existing ones:
+
+1. **Creating new components:**
+
+   ```bash
+   # Navigate to the UI package
+   cd packages/ui
+
+   # Create your component in src/
+   # Add it to src/index.ts for exports
+   # Run type checking
+   bun run check-types
+   ```
+
+2. **Using components in apps:**
+
+   ```tsx
+   // Both web and extension apps have @repo/ui as a dependency
+   import { ComponentName } from "@repo/ui";
+
+   // Or import specific components
+   import { Button, Card, Modal } from "@repo/ui";
+   ```
+
+3. **Design system principles:**
+   - Follow the dark theme with neon accents
+   - Use water drop animations for interactive elements
+   - Implement glass morphism for containers
+   - Ensure responsive design
+   - Include proper TypeScript types
+   - Support both controlled and uncontrolled patterns
+
+4. **Testing changes:**
+   ```bash
+   # From the root directory
+   bun run check-types  # Verify TypeScript
+   bun run lint         # Check code style
+   bun dev              # Test in both web and extension
+   ```
 
 ## Contributing
 
@@ -210,10 +272,9 @@ Website & Marketing
 
 ## Acknowledgments
 
-- **Groq** for providing fast AI inference infrastructure
+- **Nahcrof** for providing fast AI inference infrastructure
 - **Moonshot AI** for the powerful Kimi K2 Instruct model
 - **GitHub** for authentication infrastructure
-- **Chrome Extension** community for excellent documentation
 - **All contributors** who help make OpenMemo better
 
 ---

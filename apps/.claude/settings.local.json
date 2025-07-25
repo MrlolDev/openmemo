@@ -6,7 +6,10 @@
       "Bash(rm:*)",
       "Bash(npx tsc:*)",
       "Bash(npm run build:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(npm run check-types:*)",
+      "Bash(pkill:*)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   }

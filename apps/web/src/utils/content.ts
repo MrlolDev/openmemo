@@ -331,12 +331,12 @@ const footerCols = [
   {
     id: 3,
     category: "About",
-    links: ["Careers", "Our Story", "Contact", "Policy"],
+    links: ["Careers", "Our Story", "Contact", "Privacy Policy"],
   },
   {
     id: 4,
     category: "Community",
-    links: ["Forum", "Stories", "Blog", "Support"],
+    links: ["Forum", "Stories", "Blog", "Terms of Service"],
   },
 ];
 

@@ -21,72 +21,85 @@ const _PLATFORM_SELECTORS = {
 function getCurrentPageContent(): string {
   // Try to get content from common input selectors
   const selectors = [
-    '#message', // Delphi
+    "#message", // Delphi
     'textarea[placeholder*="Message"]', // ChatGPT
     'div[contenteditable="true"]', // Various platforms
-    'textarea', // Generic
-    'input[type="text"]' // Generic
+    "textarea", // Generic
+    'input[type="text"]', // Generic
   ];
-  
+
   for (const selector of selectors) {
-    const element = document.querySelector(selector) as HTMLTextAreaElement | HTMLInputElement;
+    const element = document.querySelector(selector) as
+      | HTMLTextAreaElement
+      | HTMLInputElement;
     if (element) {
-      const content = element.value || element.textContent || '';
+      const content = element.value || element.textContent || "";
       if (content.trim()) {
         return content;
       }
     }
   }
-  
+
   // Fallback: get some context from page title or visible text
-  return document.title || '';
+  return document.title || "";
 }
 
 function insertMemoryIntoActiveInput(text: string) {
   // Try to insert into the most likely active input
   const selectors = [
-    '#message', // Delphi
+    "#message", // Delphi
     'textarea[placeholder*="Message"]', // ChatGPT
     'div[contenteditable="true"]', // Various platforms
-    'textarea', // Generic
+    "textarea", // Generic
   ];
-  
+
   for (const selector of selectors) {
-    const element = document.querySelector(selector) as HTMLTextAreaElement | HTMLElement;
+    const element = document.querySelector(selector) as
+      | HTMLTextAreaElement
+      | HTMLElement;
     if (element) {
-      if (element.tagName.toLowerCase() === 'textarea') {
+      if (element.tagName.toLowerCase() === "textarea") {
         const textarea = element as HTMLTextAreaElement;
-        const currentContent = textarea.value || '';
-        textarea.value = currentContent + (currentContent ? '\n\n' + text : text);
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        textarea.dispatchEvent(new Event('change', { bubbles: true }));
+        const currentContent = textarea.value || "";
+        textarea.value =
+          currentContent + (currentContent ? "\n\n" + text : text);
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        textarea.dispatchEvent(new Event("change", { bubbles: true }));
         textarea.focus();
-      } else if (element.contentEditable === 'true') {
-        const currentContent = element.textContent || '';
-        element.textContent = currentContent + (currentContent ? '\n\n' + text : text);
-        element.dispatchEvent(new Event('input', { bubbles: true }));
-        element.dispatchEvent(new Event('change', { bubbles: true }));
+      } else if (element.contentEditable === "true") {
+        const currentContent = element.textContent || "";
+        element.textContent =
+          currentContent + (currentContent ? "\n\n" + text : text);
+        element.dispatchEvent(new Event("input", { bubbles: true }));
+        element.dispatchEvent(new Event("change", { bubbles: true }));
         element.focus();
       }
       return;
     }
   }
-  
-  console.warn('OpenMemo: Could not find suitable input element to insert memory');
+
+  console.warn(
+    "OpenMemo: Could not find suitable input element to insert memory"
+  );
 }
 
-export function showNotification(message: string, type: "success" | "error" | "warning" = "success") {
+export function showNotification(
+  message: string,
+  type: "success" | "error" | "warning" = "success"
+) {
   const notification = document.createElement("div");
-  
+
   // Enhanced styling to match OpenMemo popup design
-  const baseClasses = "openmemo-notification fixed top-4 right-4 z-[10000] px-4 py-3 rounded-xl text-sm font-medium shadow-2xl backdrop-blur-sm border transition-all duration-300 animate-slide-in-right";
-  
+  const baseClasses =
+    "openmemo-notification fixed top-4 right-4 z-[10000] px-4 py-3 rounded-xl text-sm font-medium shadow-2xl backdrop-blur-sm border transition-all duration-300 animate-slide-in-right";
+
   let typeClasses = "";
   let icon = "";
-  
+
   switch (type) {
     case "success":
-      typeClasses = "bg-[#0d0d0d]/90 border-[#A8FF00]/30 text-white shadow-[0_0_20px_rgba(168,255,0,0.3)]";
+      typeClasses =
+        "bg-[#0d0d0d]/90 border-[#A8FF00]/30 text-white shadow-[0_0_20px_rgba(168,255,0,0.3)]";
       icon = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8FF00" stroke-width="2" class="flex-shrink-0">
           <polyline points="20,6 9,17 4,12"></polyline>
@@ -94,7 +107,8 @@ export function showNotification(message: string, type: "success" | "error" | "w
       `;
       break;
     case "error":
-      typeClasses = "bg-[#0d0d0d]/90 border-red-500/30 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]";
+      typeClasses =
+        "bg-[#0d0d0d]/90 border-red-500/30 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]";
       icon = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" class="flex-shrink-0">
           <circle cx="12" cy="12" r="10"></circle>
@@ -104,7 +118,8 @@ export function showNotification(message: string, type: "success" | "error" | "w
       `;
       break;
     case "warning":
-      typeClasses = "bg-[#0d0d0d]/90 border-yellow-500/30 text-white shadow-[0_0_20px_rgba(234,179,8,0.3)]";
+      typeClasses =
+        "bg-[#0d0d0d]/90 border-yellow-500/30 text-white shadow-[0_0_20px_rgba(234,179,8,0.3)]";
       icon = `
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" class="flex-shrink-0">
           <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
@@ -114,9 +129,9 @@ export function showNotification(message: string, type: "success" | "error" | "w
       `;
       break;
   }
-  
+
   notification.className = `${baseClasses} ${typeClasses}`;
-  
+
   notification.innerHTML = `
     <div class="flex items-start gap-3">
       ${icon}
@@ -133,7 +148,7 @@ export function showNotification(message: string, type: "success" | "error" | "w
   `;
 
   // Add floating animation keyframes if not already present
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.textContent = `
     @keyframes slide-in-right {
       from {
@@ -149,9 +164,9 @@ export function showNotification(message: string, type: "success" | "error" | "w
       animation: slide-in-right 0.3s ease-out;
     }
   `;
-  
-  if (!document.querySelector('style[data-openmemo-notifications]')) {
-    style.setAttribute('data-openmemo-notifications', 'true');
+
+  if (!document.querySelector("style[data-openmemo-notifications]")) {
+    style.setAttribute("data-openmemo-notifications", "true");
     document.head.appendChild(style);
   }
 
@@ -160,8 +175,8 @@ export function showNotification(message: string, type: "success" | "error" | "w
   // Auto-remove after 4 seconds (slightly longer for better UX)
   setTimeout(() => {
     if (notification.parentElement) {
-      notification.style.transform = 'translateX(100%)';
-      notification.style.opacity = '0';
+      notification.style.transform = "translateX(100%)";
+      notification.style.opacity = "0";
       setTimeout(() => {
         notification.remove();
       }, 300);
@@ -183,24 +198,30 @@ export async function loadMemoriesForPlatform() {
   try {
     // Check if extension context is still valid
     if (!isExtensionContextValid()) {
-      showNotification("Extension was updated. Please refresh the page to continue.", "warning");
+      showNotification(
+        "Extension was updated. Please refresh the page to continue.",
+        "warning"
+      );
       return;
     }
 
-    const isUniversal = !!((window as any).openMemoUniversalRunning);
+    const isUniversal = !!(window as any).openMemoUniversalRunning;
     if (!isUniversal) {
       console.log("OpenMemo: Direct load memories called");
     }
 
     // Use universal auth check that automatically handles CSP restrictions
-    const authResult = await universalAuthCheck(
-      () => apiService.isAuthenticated()
+    const authResult = await universalAuthCheck(() =>
+      apiService.isAuthenticated()
     );
     const isAuthenticated = authResult.isAuthenticated;
 
     if (!isAuthenticated) {
-      showNotification("Please sign in to OpenMemo to access your memories", "error");
-      
+      showNotification(
+        "Please sign in to OpenMemo to access your memories",
+        "error"
+      );
+
       // Open the popup after 3 seconds (when notification disappears)
       setTimeout(() => {
         try {
@@ -208,24 +229,31 @@ export async function loadMemoriesForPlatform() {
             if (chrome.action) {
               chrome.action.openPopup().catch(() => {
                 // If openPopup fails, send message to background script to open popup
-                chrome.runtime.sendMessage({ action: 'openPopup' }).catch(() => {
-                  console.log("OpenMemo: Could not communicate with extension");
-                });
+                chrome.runtime
+                  .sendMessage({ action: "openPopup" })
+                  .catch(() => {
+                    console.log(
+                      "OpenMemo: Could not communicate with extension"
+                    );
+                  });
               });
             } else {
               // Fallback: send message to background script
-              chrome.runtime.sendMessage({ action: 'openPopup' }).catch(() => {
+              chrome.runtime.sendMessage({ action: "openPopup" }).catch(() => {
                 console.log("OpenMemo: Could not communicate with extension");
               });
             }
           } else {
-            showNotification("Extension context lost. Please refresh the page.", "warning");
+            showNotification(
+              "Extension context lost. Please refresh the page.",
+              "warning"
+            );
           }
         } catch (error) {
           console.log("OpenMemo: Extension context error:", error);
         }
       }, 3000);
-      
+
       return;
     }
 
@@ -237,31 +265,36 @@ export async function loadMemoriesForPlatform() {
       // If no context, just load recent memories
       const result = await universalApiRequest(
         () => apiService.getMemories({ limit: 5 }),
-        { endpoint: '/memories', method: 'GET' }
+        { endpoint: "/memories", method: "GET" }
       );
       const memories = result.memories;
-      
+
       if (memories.length === 0) {
-        showNotification("No memories found. Add some memories first!", "warning");
+        showNotification(
+          "No memories found. Add some memories first!",
+          "warning"
+        );
         return;
       }
-      
+
       const memoryText = memories.map((m: Memory) => m.content).join("\n\n");
-      insertMemoryIntoActiveInput(memoryText);
+      const textToInsert = `\n\n This are memories that you can use to help you with your current task. My question is above this memories, just use them as a reference and keep using the language of the question: ${memoryText}`;
+      insertMemoryIntoActiveInput(textToInsert);
       showNotification(`Loaded ${memories.length} recent memories`, "success");
       return;
     }
 
     // Load relevant memories based on current context with automatic new memory extraction
     const result = await universalApiRequest(
-      () => apiService.getMemories({ 
-        query, 
-        limit: 5, 
-        extractNewMemories: true 
-      }),
-      { 
+      () =>
+        apiService.getMemories({
+          query,
+          limit: 5,
+          extractNewMemories: true,
+        }),
+      {
         endpoint: `/memories?query=${encodeURIComponent(query)}&limit=5&extractNewMemories=true`,
-        method: 'GET'
+        method: "GET",
       }
     );
     const memories = result.memories;
@@ -275,20 +308,26 @@ export async function loadMemoriesForPlatform() {
     }
 
     if (memories.length === 0) {
-      showNotification("No relevant memories found for the current context", "warning");
+      showNotification(
+        "No relevant memories found for the current context",
+        "warning"
+      );
       return;
     }
 
     const memoryText = memories.map((m: Memory) => m.content).join("\n\n");
     insertMemoryIntoActiveInput(memoryText);
-    
-    const searchTypeText = result.searchType === 'vector-semantic' ? 'semantic' : 
-                          result.searchType === 'ai-powered' ? 'AI-powered' : 'text';
+
+    const searchTypeText =
+      result.searchType === "vector-semantic"
+        ? "semantic"
+        : result.searchType === "ai-powered"
+          ? "AI-powered"
+          : "text";
     showNotification(
       `Loaded ${memories.length} relevant memories using ${searchTypeText} search`,
       "success"
     );
-
   } catch (error) {
     console.error("Error loading memories:", error);
     showNotification("Failed to load memories. Please try again.", "error");
@@ -461,36 +500,36 @@ export function showMemorySelector(
         '<div class="flex items-center justify-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div></div>';
 
       // Use universal auth check for CSP compatibility
-      const authResult = await universalAuthCheck(
-        () => apiService.isAuthenticated()
+      const authResult = await universalAuthCheck(() =>
+        apiService.isAuthenticated()
       );
-      
+
       if (!authResult.isAuthenticated) {
         resultsDiv.innerHTML =
           '<p class="text-red-500 text-sm text-center py-4">Please sign in to OpenMemo to access your memories</p>';
-        
+
         // Open the popup after a short delay
         setTimeout(() => {
           if (chrome.action) {
             chrome.action.openPopup().catch(() => {
               // If openPopup fails, send message to background script to open popup
-              chrome.runtime.sendMessage({ action: 'openPopup' });
+              chrome.runtime.sendMessage({ action: "openPopup" });
             });
           } else {
             // Fallback: send message to background script
-            chrome.runtime.sendMessage({ action: 'openPopup' });
+            chrome.runtime.sendMessage({ action: "openPopup" });
           }
         }, 2000);
-        
+
         return;
       }
 
       // Use universal API request for CSP compatibility
       const result = await universalApiRequest(
         () => apiService.getMemories({ query, limit: 10 }),
-        { 
+        {
           endpoint: `/memories?query=${encodeURIComponent(query)}&limit=10`,
-          method: 'GET'
+          method: "GET",
         }
       );
       const memories = result.memories;
@@ -506,7 +545,7 @@ export function showMemorySelector(
             <div class="flex-1">
               <div class="text-sm font-medium ${textClass} mb-1">${memory.content.substring(0, 120)}${memory.content.length > 120 ? "..." : ""}</div>
               <div class="${placeholderTextClass} text-xs">${memory.category} • ${new Date(memory.createdAt).toLocaleDateString()}</div>
-              ${memory.tags && (Array.isArray(memory.tags) ? memory.tags.length > 0 : memory.tags.trim().length > 0) ? `<div class="text-xs mt-1" style="color: ${primaryBtnClass.includes('green') ? '#10B981' : primaryBtnClass.includes('orange') ? '#EA580C' : primaryBtnClass.includes('purple') ? '#9333EA' : '#3B82F6'};">${Array.isArray(memory.tags) ? memory.tags.join(", ") : memory.tags}</div>` : ""}
+              ${memory.tags && (Array.isArray(memory.tags) ? memory.tags.length > 0 : memory.tags.trim().length > 0) ? `<div class="text-xs mt-1" style="color: ${primaryBtnClass.includes("green") ? "#10B981" : primaryBtnClass.includes("orange") ? "#EA580C" : primaryBtnClass.includes("purple") ? "#9333EA" : "#3B82F6"};">${Array.isArray(memory.tags) ? memory.tags.join(", ") : memory.tags}</div>` : ""}
             </div>
           </label>
         `

@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
 import memoriesRouter from "./routes/memories";
+import memoriesGithubRouter from "./routes/memoriesGithub";
 import usersRouter from "./routes/users";
 import morgan from "morgan";
 import authRouter from "./routes/auth";
@@ -56,6 +57,7 @@ app.get("/health", (req, res) => {
 // Routes with specific rate limiting
 app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/memories", generalLimiter, authMiddleware as any, memoriesRouter);
+app.use("/api/memories-github", generalLimiter, authMiddleware as any, memoriesGithubRouter);
 app.use("/api/users", generalLimiter, authMiddleware as any, usersRouter);
 
 // Error handling

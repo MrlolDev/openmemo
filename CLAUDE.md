@@ -112,3 +112,22 @@ OpenMemo follows a sleek, dark aesthetic that mirrors the logo's black backdrop 
 - Apply backdrop-filter: blur() for glass effects
 - Use box-shadow with neon colors for glowing elements
 - Ensure high contrast ratios for accessibility while maintaining the dark aesthetic
+
+## Shared UI Package
+
+The `@repo/ui` package provides a complete design system used by both web and extension apps:
+
+### Available Components
+- **Button** (5 variants): WaterDropButton, GhostButton, GlassButton, etc.
+- **Card** (4 variants): GlassCard, GlowCard, ElevatedCard, MinimalCard
+- **Input/Textarea** (3 variants): NeonInput, GlassInput, MinimalInput
+- **Select/Dropdown**: Styled dropdowns with neon focus and icon support
+- **Search**: Debounced search with autocomplete and clear functionality
+- **Loading** (4 variants): LoadingScreen, SpinnerLoading, DotsLoading, etc.
+- **Tabs** (4 variants): PillTabs, UnderlineTabs, ButtonTabs
+- **Tooltip** (3 variants): NeonTooltip, MinimalTooltip with positioning
+- **Modal** (4 variants): NeonModal, GlassModal with hooks (useModal, useConfirmModal)
+- **Animations**: WaterDrop, BackgroundEffect, FadeIn, StaggerContainer
+
+### Usage
+All components follow TypeScript patterns with proper prop interfaces, support both controlled/uncontrolled usage, and implement the OpenMemo design system consistently across web and extension applications.
